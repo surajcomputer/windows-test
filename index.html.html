@@ -1,0 +1,157 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windows Online Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .question { display: none; margin-bottom: 20px; }
+    .question.active { display: block; }
+    .timer { font-size: 20px; color: red; font-weight: bold; margin-bottom: 20px; }
+    .info input { margin: 5px 0; display: block; width: 100%; padding: 8px; }
+    .result { font-size: 24px; font-weight: bold; color: green; }
+    .btn { padding: 10px 20px; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Windows Online Test</h1>
+  <div class="info">
+    <label>Student Name: <input type="text" id="studentName" required></label>
+    <label>Father's Name: <input type="text" id="fatherName" required></label>
+    <label>Date of Birth: <input type="date" id="dob" required></label>
+    <button class="btn" onclick="startTest()">Start Test</button>
+  </div>
+
+  <div id="testSection" style="display:none;">
+    <div class="timer" id="timer">30:00</div>
+    <form id="quizForm">
+      <div id="questionsContainer"></div>
+      <button type="button" class="btn" onclick="nextQuestion()">Next</button>
+      <button type="submit" class="btn" style="display:none;">Submit</button>
+    </form>
+    <div class="result" id="result"></div>
+  </div>
+
+  <script>
+    
+const questions = [
+  { q: "Windows किस प्रकार का सॉफ़्टवेयर है?", options: ["Application", "System", "Utility", "Compiler"], answer: 1 },
+  { q: "Windows OS का पहला संस्करण कब जारी किया गया था?", options: ["1983", "1985", "1990", "1995"], answer: 1 },
+  { q: "Recycle Bin का उपयोग किसलिए होता है?", options: ["Permanent delete", "Temporary delete", "Rename", "Format"], answer: 1 },
+  { q: "Windows में 'Ctrl + C' का उपयोग किस लिए होता है?", options: ["Cut", "Paste", "Copy", "Close"], answer: 2 },
+  { q: "Windows का नवीनतम संस्करण क्या है (2024 तक)?", options: ["Windows 8", "Windows 10", "Windows 11", "Windows XP"], answer: 2 },
+  { q: "Windows Explorer का मुख्य कार्य क्या है?", options: ["Games चलाना", "Files मैनेज करना", "इंटरनेट चलाना", "शॉर्टकट बनाना"], answer: 1 },
+  { q: "Windows में .exe फाइल का प्रयोग किस लिए होता है?", options: ["Image के लिए", "Executable प्रोग्राम", "Text file", "Audio"], answer: 1 },
+  { q: "Windows में 'Alt + F4' का कार्य क्या होता है?", options: ["सिस्टम बंद करना", "फाइल सेव करना", "विंडो बंद करना", "विंडो खोलना"], answer: 2 },
+  { q: "Desktop पर दिखने वाले चित्र को क्या कहते हैं?", options: ["Folder", "Icon", "Shortcut", "Tile"], answer: 1 },
+  { q: "Taskbar का स्थान कहां होता है?", options: ["Top", "Bottom", "Left", "Right"], answer: 1 },
+  { q: "Microsoft Windows किस कंपनी का उत्पाद है?", options: ["Apple", "IBM", "Google", "Microsoft"], answer: 3 },
+  { q: "Windows में .doc फाइल किससे जुड़ी होती है?", options: ["MS Word", "MS Excel", "MS PowerPoint", "MS Paint"], answer: 0 },
+  { q: "Windows में 'Ctrl + V' का कार्य क्या है?", options: ["Cut", "Paste", "Print", "Undo"], answer: 1 },
+  { q: "Windows में Notepad किस प्रकार का प्रोग्राम है?", options: ["Spreadsheet", "Text Editor", "Presentation", "Image Viewer"], answer: 1 },
+  { q: "Control Panel का उपयोग होता है?", options: ["Games", "Settings", "Documents", "Browsing"], answer: 1 },
+  { q: "My Computer का नाम अब क्या हो गया है?", options: ["This PC", "My System", "PC Box", "Computer"], answer: 0 },
+  { q: "Windows में BIOS का पूरा नाम क्या है?", options: ["Basic Integrated OS", "Basic Input Output System", "Binary Interface OS", "None"], answer: 1 },
+  { q: "Windows में स्क्रीन सेवर कब एक्टिव होता है?", options: ["Start होते ही", "कुछ समय निष्क्रियता के बाद", "Shutdown पर", "Restart पर"], answer: 1 },
+  { q: "Paint प्रोग्राम किसके लिए उपयोग होता है?", options: ["Programming", "Drawing", "Typing", "Gaming"], answer: 1 },
+  { q: "MS-DOS एक ___ है।", options: ["GUI", "Compiler", "Command Line OS", "Database"], answer: 2 },
+  { q: "Windows किस प्रकार का यूजर इंटरफेस प्रदान करता है?", options: ["Text", "GUI", "CLI", "Both A and B"], answer: 1 },
+  { q: "Windows में 'Ctrl + Z' का उपयोग किस लिए होता है?", options: ["Redo", "Undo", "Copy", "Save"], answer: 1 },
+  { q: "Run Dialog Box खोलने के लिए किस शॉर्टकट का उपयोग होता है?", options: ["Ctrl + R", "Windows + R", "Alt + R", "Shift + R"], answer: 1 },
+  { q: "Windows में Firewall का प्रयोग किस लिए होता है?", options: ["Drawing", "Security", "Speed बढ़ाने के लिए", "Gaming"], answer: 1 },
+  { q: "File extension .xlsx किस प्रोग्राम से संबंधित है?", options: ["Word", "Excel", "PowerPoint", "Access"], answer: 1 },
+  { q: "Windows में Printer जोड़ने का विकल्प कहां होता है?", options: ["Control Panel", "My Computer", "CMD", "Paint"], answer: 0 },
+  { q: "Windows में CMD का पूरा नाम क्या है?", options: ["Control Message Dialog", "Command Prompt", "Custom Management Dialog", "Central Mode Driver"], answer: 1 },
+  { q: "Clipboard का कार्य क्या है?", options: ["Temporary Storage", "Permanent Storage", "Backup", "None"], answer: 0 },
+  { q: "Windows में 'Alt + Tab' का प्रयोग होता है?", options: ["App Switch", "Close App", "Refresh", "Run"], answer: 0 },
+  { q: "Shortcut बनाने के लिए किस क्लिक का उपयोग होता है?", options: ["Left", "Right", "Double", "None"], answer: 1 },
+  { q: "Windows Store किसके लिए है?", options: ["Apps Download", "Update BIOS", "Run Games", "Change RAM"], answer: 0 },
+  { q: "Default ब्राउज़र Windows में क्या होता है?", options: ["Chrome", "Firefox", "Edge", "Opera"], answer: 2 },
+  { q: "Recycle Bin से फाइल हटाने के लिए क्या करें?", options: ["Restore", "Delete", "Shift + Delete", "Empty Recycle Bin"], answer: 3 },
+  { q: "Disk Cleanup Utility का उपयोग होता है?", options: ["File बनाना", "Delete Virus", "System Clean", "Disk Format"], answer: 2 },
+  { q: "Windows Update का कार्य है?", options: ["System को Slow करना", "Virus लाना", "Features जोड़ना", "Uninstall करना"], answer: 2 },
+  { q: "Windows में Guest Account का उपयोग क्यों किया जाता है?", options: ["Admin Task", "Limited Access", "Network Setup", "Gaming"], answer: 1 },
+  { q: "Windows Explorer किसके लिए उपयोगी है?", options: ["File Browsing", "Video Editing", "Programming", "Typing"], answer: 0 },
+  { q: "Alt + Enter का प्रयोग किसके लिए होता है?", options: ["Fullscreen", "Properties खोलना", "Save करना", "Print करना"], answer: 1 },
+  { q: "F2 का उपयोग किस लिए होता है?", options: ["Rename", "Delete", "Refresh", "Exit"], answer: 0 },
+  { q: "Safe Mode का उपयोग कब होता है?", options: ["Normal Use", "Troubleshooting", "Gaming", "Typing"], answer: 1 },
+  { q: "Task Manager खोलने के लिए कौन सा शॉर्टकट है?", options: ["Ctrl + Shift + Esc", "Alt + F4", "Windows + L", "Shift + Delete"], answer: 0 },
+  { q: "Virtual Desktop बनाने के लिए किसका उपयोग होता है?", options: ["Ctrl + D", "Windows + Tab", "Windows + Ctrl + D", "Alt + D"], answer: 2 },
+  { q: "Windows में Snipping Tool का उपयोग होता है?", options: ["Draw", "Type", "Screenshot", "Games"], answer: 2 },
+  { q: "Windows का सिस्टम फाइल फॉर्मेट क्या है?", options: ["NTFS", "FAT", "exFAT", "PDF"], answer: 0 },
+  { q: "Hibernate Mode में क्या होता है?", options: ["System Restart", "RAM Format", "Save State", "None"], answer: 2 },
+  { q: "Sticky Notes किस काम आती है?", options: ["Video", "Reminder", "Security", "Design"], answer: 1 },
+  { q: "Windows की Settings खोलने का शॉर्टकट क्या है?", options: ["Windows + I", "Ctrl + I", "Alt + S", "Shift + S"], answer: 0 },
+  { q: "Windows में Lock Screen शॉर्टकट क्या है?", options: ["Ctrl + L", "Windows + L", "Alt + L", "Shift + L"], answer: 1 }
+];
+
+
+    let current = 0, score = 0, totalSeconds = 1800;
+
+    function startTest() {
+      if (!document.getElementById('studentName').value || !document.getElementById('fatherName').value || !document.getElementById('dob').value) {
+        alert("Please fill in all fields");
+        return;
+      }
+      document.querySelector('.info').style.display = 'none';
+      document.getElementById('testSection').style.display = 'block';
+      showQuestion();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function showQuestion() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+      if (current < questions.length) {
+        const q = questions[current];
+        let html = `<div class="question active"><p>${current + 1}. ${q.q}</p>`;
+        q.options.forEach((opt, i) => {
+          html += `<label><input type="radio" name="q${current}" value="${i}"> ${opt}</label><br>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      }
+      if (current === questions.length - 1) {
+        document.querySelector('form button[type="submit"]').style.display = 'inline-block';
+        document.querySelector('form button[type="button"]').style.display = 'none';
+      }
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector(`input[name="q${current}"]:checked`);
+      if (!selected) { alert("Please select an answer"); return; }
+      if (parseInt(selected.value) === questions[current].answer) score++;
+      current++;
+      showQuestion();
+    }
+
+    document.getElementById("quizForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const selected = document.querySelector(`input[name="q${current}"]:checked`);
+      if (selected && parseInt(selected.value) === questions[current].answer) score++;
+      clearInterval(timerInterval);
+      showResult();
+    });
+
+    function showResult() {
+      const pass = score >= (questions.length * 0.5);
+      document.getElementById("questionsContainer").style.display = 'none';
+      document.getElementById("result").textContent = `Result: ${pass ? "Pass" : "Fail"} (Score: ${score}/${questions.length})`;
+    }
+
+    function updateTimer() {
+      let minutes = Math.floor(totalSeconds / 60);
+      let seconds = totalSeconds % 60;
+      document.getElementById("timer").textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      if (totalSeconds <= 0) {
+        clearInterval(timerInterval);
+        alert("Time's up! Auto-submitting your test.");
+        document.getElementById("quizForm").requestSubmit();
+      }
+      totalSeconds--;
+    }
+  </script>
+</body>
+</html>
